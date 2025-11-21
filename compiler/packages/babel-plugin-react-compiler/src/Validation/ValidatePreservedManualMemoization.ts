@@ -288,7 +288,7 @@ function validateInferredDep(
       errorDiagnostic = merge(errorDiagnostic ?? compareResult, compareResult);
     }
   }
-  errorState.pushDiagnostic(
+      errorState.pushDiagnostic(
     CompilerDiagnostic.create({
       category: ErrorCategory.PreserveManualMemo,
       reason: 'Existing memoization could not be preserved',
@@ -308,6 +308,8 @@ function validateInferredDep(
                 : 'Inferred dependency not present in source'
             }`
           : '',
+        // Helpful hint for common developer mistake: referencing a memoized value before it is declared
+        '\n\nHint: this can happen when a callback or other value references a memoized value that is declared later in the same component. Try moving the callback after the `useMemo`/`useCallback` (or otherwise re-ordering declarations) so that manual memoization appears before references.',
       ]
         .join('')
         .trim(),
@@ -602,6 +604,7 @@ class Visitor extends ReactiveFunctionVisitor<VisitorState> {
                     DEBUG
                       ? `${printIdentifier(identifier)} was not memoized.`
                       : '',
+                    '\n\nHint: this can happen if the memoized value is referenced before the manual memoization is declared (for example, a callback declared earlier that references a later `useMemo`). Try moving references after the `useMemo`/`useCallback`, or re-ordering declarations so the manual memoization appears before any references.',
                   ]
                     .join('')
                     .trim(),
